@@ -39,6 +39,8 @@ int main(int argc, char *argv[])
     // Sender and receiver rank for Sendrecv operation
     int from, to;
 
+    double timer_simulation;
+
     // The usual MPI startup routines
 	int provided;
 	MPI_Init_thread(&argc, &argv, MPI_THREAD_FUNNELED, &provided);
@@ -110,7 +112,7 @@ int main(int argc, char *argv[])
         to = my_rank == 0 ? MPI_PROC_NULL : my_rank - 1;
         from = my_rank == comm_size-1 ? MPI_PROC_NULL : my_rank + 1;
         MPI_Sendrecv(&temperature[1][1], COLUMNS, MPI_DOUBLE, to, 0,
-                     &temperature_last[ROW+1][1], COLUMNS, MPI_DOUBLE, from, MPI_ANY_TAG,
+                     &temperature_last[ROWS+1][1], COLUMNS, MPI_DOUBLE, from, MPI_ANY_TAG,
                      MPI_COMM_WORLD, &status);
 
         //////////////////////////////////////
@@ -119,7 +121,7 @@ int main(int argc, char *argv[])
         dt = 0.0;
 
     // TODO: testing around with schedule()
-		#pragma omp parallel for default(none) shared(temperature, temperature_last, dt) schedule(dynamic) reduction(max:dt) collapse(2)
+		#pragma omp parallel for default(none) shared(temperature, temperature_last) schedule(dynamic) reduction(max:dt) collapse(2)
         for(unsigned int i = 1; i <= ROWS; i++)
         {
             for(unsigned int j = 1; j <= COLUMNS; j++)

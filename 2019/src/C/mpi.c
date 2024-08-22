@@ -37,6 +37,8 @@ int main(int argc, char *argv[])
     // Status returned by MPI calls
     MPI_Status status;
 
+    double timer_simulation;
+
     // The usual MPI startup routines
     MPI_Init(&argc, &argv);
     MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
