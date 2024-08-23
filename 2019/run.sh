@@ -139,7 +139,7 @@ if [ "$2" == "mpi" ]; then
 	if [ "$3" == "small" ]; then
 		runner="mpirun -n 4 -mca btl ^openib";
 	else
-		runner="mpirun -n 112 -mca btl ^openib";
+		runner="mpirun -n 112 -mca btl ^openib"; # Does not work on Teach cluster unless we change submission script
 	fi
 elif [ "$2" == "openmp" ]; then
 	if [ "$3" == "small" ]; then
@@ -151,7 +151,7 @@ elif [ "$2" == "hybrid_cpu" ]; then
 	if [ "$3" == "small" ]; then
 		runner="mpirun -n 2 -x OMP_NUM_THREADS=2 -mca btl ^openib";
 	else
-		runner="mpirun -n 8 -x OMP_NUM_THREADS=14 -mca btl ^openib";
+		runner="mpirun -n 8 -x OMP_NUM_THREADS=8 -mca btl ^openib";
 	fi
 fi
 executable="./bin/$1/$2_$3";

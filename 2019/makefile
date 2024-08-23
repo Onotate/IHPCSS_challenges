@@ -24,7 +24,7 @@ BIG_DEFINES_HYBRID_FORTRAN=-DROWS=$(BIG_GLOBAL) -DCOLUMNS_GLOBAL=$(BIG_GLOBAL) -
 
 CC=gcc
 MPICC=mpicc
-CFLAGS=-std=c99 -Ofast
+CFLAGS=-std=c99 -O3 -lm
 
 default: quick_compile
 
