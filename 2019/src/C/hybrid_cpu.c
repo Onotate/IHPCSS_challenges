@@ -85,7 +85,7 @@ int main(int argc, char *argv[])
 
         // Main calculation: average my four neighbours
         // TODO: testing around with schedule()
-		#pragma omp parallel for default(none) shared(temperature, temperature_last) schedule(dynamic) collapse(2) 
+	  #pragma omp parallel for default(none) shared(temperature, temperature_last)
         for(unsigned int i = 1; i <= ROWS; i++)
         {
             for(unsigned int j = 1; j <= COLUMNS; j++)
@@ -121,7 +121,7 @@ int main(int argc, char *argv[])
         dt = 0.0;
 
     // TODO: testing around with schedule()
-		#pragma omp parallel for default(none) shared(temperature, temperature_last) schedule(dynamic) reduction(max:dt) collapse(2)
+		#pragma omp parallel for default(none) shared(temperature, temperature_last) reduction(max:dt)
         for(unsigned int i = 1; i <= ROWS; i++)
         {
             for(unsigned int j = 1; j <= COLUMNS; j++)
