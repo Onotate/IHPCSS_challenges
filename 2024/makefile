@@ -1,5 +1,6 @@
 CC=mpicc
-CFLAGS=-O2 -Wall -fopenmp
+# Set default CFLAGS, allow them to be overridden or extended by the command line
+CFLAGS ?= -O2 -Wall -fopenmp
 BIN_DIR=bin
 
 # Define source directories
