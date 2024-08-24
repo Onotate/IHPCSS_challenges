@@ -39,7 +39,9 @@ export OMP_PROC_BIND=true;
 module load cuda/11.7.1 nvhpc/22.9 openmpi/4.0.5-nvhpc22.9
 
 # Compile everything
-make
+# Make is in the parent directory so we need to move there first
+make -C ..
 
 # Execute the program
+# Make sure to run the executable in the parent directory and target correct binary
 mpirun -n $SLURM_NTASKS --bind-to none --report-bindings ./bin/main
