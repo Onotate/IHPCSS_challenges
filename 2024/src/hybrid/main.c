@@ -12,7 +12,7 @@
 #include <mpi.h>
 
 /// The number of vertices in the graph.
-#define GRAPH_ORDER 1000
+#define GRAPH_ORDER 3000
 /// Parameters used in pagerank convergence, do not change.
 #define DAMPING_FACTOR 0.85
 /// The number of seconds to not exceed forthe calculation loop.
@@ -211,7 +211,7 @@ int main(int argc, char* argv[])
     printf("Sum of all pageranks = %.12f, total diff = %.12f, max diff = %.12f and min diff = %.12f.\n", sum_ranks, total_diff, max_diff, min_diff);
     double end = omp_get_wtime();
  
-    printf("Total time taken: %.2f seconds.\n", end - start);
+    printf("Total time taken: %.4f seconds.\n", end - start);
  
     return 0;
 }
