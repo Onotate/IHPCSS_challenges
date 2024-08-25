@@ -7,9 +7,11 @@
  
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 #include <math.h>
 #include <omp.h>
 #include <mpi.h>
+#include <string.h>
 
 /// The number of vertices in the graph.
 #define GRAPH_ORDER 1000
@@ -24,20 +26,14 @@
  * will be 1.0. The absence of edge is represented with value 0.0.
  * Redundant edges are still represented with value 1.0.
  */
-double adjacency_matrix[GRAPH_ORDER][GRAPH_ORDER];
+bool adjacency_matrix[GRAPH_ORDER][GRAPH_ORDER];
 double max_diff = 0.0;
 double min_diff = 1.0;
 double total_diff = 0.0;
  
 void initialize_graph(void)
 {
-    for(int i = 0; i < GRAPH_ORDER; i++)
-    {
-        for(int j = 0; j < GRAPH_ORDER; j++)
-        {
-            adjacency_matrix[i][j] = 0.0;
-        }
-    }
+  memset(adjacency_matrix, 0, sizeof(adjacency_matrix));
 }
 
 /**
@@ -61,32 +57,25 @@ void calculate_pagerank(double pagerank[])
     double elapsed = omp_get_wtime() - start;
     double time_per_iteration = 0;
     double new_pagerank[GRAPH_ORDER];
-    for(int i = 0; i < GRAPH_ORDER; i++)
-    {
-        new_pagerank[i] = 0.0;
-    }
 
     // If we exceeded the MAX_TIME seconds, we stop. If we typically spend X seconds on an iteration, and we are less than X seconds away from MAX_TIME, we stop.
     while(elapsed < MAX_TIME && (elapsed + time_per_iteration) < MAX_TIME)
     {
         double iteration_start = omp_get_wtime();
  
-        for(int i = 0; i < GRAPH_ORDER; i++)
-        {
-            new_pagerank[i] = 0.0;
-        }
+        memset(new_pagerank, 0, sizeof(new_pagerank));
  
 		for(int i = 0; i < GRAPH_ORDER; i++)
         {
 			for(int j = 0; j < GRAPH_ORDER; j++)
             {
-				if (adjacency_matrix[j][i] == 1.0)
+				if (adjacency_matrix[j][i])
                 {
 					int outdegree = 0;
 				 
 					for(int k = 0; k < GRAPH_ORDER; k++)
                     {
-						if (adjacency_matrix[j][k] == 1.0)
+						if (adjacency_matrix[j][k])
                         {
 							outdegree++;
 						}
@@ -110,10 +99,7 @@ void calculate_pagerank(double pagerank[])
         total_diff += diff;
         min_diff = (min_diff > diff) ? diff : min_diff;
  
-        for(int i = 0; i < GRAPH_ORDER; i++)
-        {
-            pagerank[i] = new_pagerank[i];
-        }
+        memcpy(pagerank, new_pagerank, sizeof(new_pagerank)); 
             
         double pagerank_total = 0.0;
         for(int i = 0; i < GRAPH_ORDER; i++)
@@ -125,10 +111,10 @@ void calculate_pagerank(double pagerank[])
             printf("[ERROR] Iteration %zu: sum of all pageranks is not 1 but %.12f.\n", iteration, pagerank_total);
         }
  
-		double iteration_end = omp_get_wtime();
-		elapsed = omp_get_wtime() - start;
-		iteration++;
-		time_per_iteration = elapsed / iteration;
+        double iteration_end = omp_get_wtime();
+        elapsed = omp_get_wtime() - start;
+        iteration++;
+        time_per_iteration = elapsed / iteration;
     }
     
     printf("%zu iterations achieved in %.2f seconds\n", iteration, elapsed);
@@ -150,7 +136,7 @@ void generate_nice_graph(void)
             int destination = j;
             if(i != j)
             {
-                adjacency_matrix[source][destination] = 1.0;
+                adjacency_matrix[source][destination] = true;
             }
         }
     }
@@ -173,7 +159,7 @@ void generate_sneaky_graph(void)
             int destination = j;
             if(i != j)
             {
-                adjacency_matrix[source][destination] = 1.0;
+                adjacency_matrix[source][destination] = true;
             }
         }
     }
