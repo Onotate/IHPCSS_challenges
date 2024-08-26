@@ -61,28 +61,19 @@ void calculate_pagerank(double pagerank[])
     // If we exceeded the MAX_TIME seconds, we stop. If we typically spend X seconds on an iteration, and we are less than X seconds away from MAX_TIME, we stop.
     while(elapsed < MAX_TIME && (elapsed + time_per_iteration) < MAX_TIME)
     {
-        double iteration_start = omp_get_wtime();
+        // double iteration_start = omp_get_wtime();
  
         memset(new_pagerank, 0, sizeof(new_pagerank));
- 
-		for(int i = 0; i < GRAPH_ORDER; i++)
-        {
-			for(int j = 0; j < GRAPH_ORDER; j++)
-            {
-				if (adjacency_matrix[j][i])
-                {
-					int outdegree = 0;
-				 
-					for(int k = 0; k < GRAPH_ORDER; k++)
-                    {
-						if (adjacency_matrix[j][k])
-                        {
-							outdegree++;
-						}
-					}
-					new_pagerank[i] += pagerank[j] / (double)outdegree;
-				}
-			}
+
+		for (int i = 0; i < GRAPH_ORDER; i++) {
+			int outdegree = 0;
+
+			for (int k = 0; k < GRAPH_ORDER; k++)
+				if (adjacency_matrix[i][k]) outdegree++;
+
+			for (int j = 0; j < GRAPH_ORDER; j++)
+				if (adjacency_matrix[i][j])
+					new_pagerank[j] += pagerank[i] / (double)outdegree;
 		}
  
         for(int i = 0; i < GRAPH_ORDER; i++)
@@ -111,7 +102,7 @@ void calculate_pagerank(double pagerank[])
             printf("[ERROR] Iteration %zu: sum of all pageranks is not 1 but %.12f.\n", iteration, pagerank_total);
         }
  
-        double iteration_end = omp_get_wtime();
+        // double iteration_end = omp_get_wtime();
         elapsed = omp_get_wtime() - start;
         iteration++;
         time_per_iteration = elapsed / iteration;
