@@ -12,7 +12,7 @@
 #include <mpi.h>
 
 /// The number of vertices in the graph.
-#define GRAPH_ORDER 3000
+#define GRAPH_ORDER 1000
 /// Parameters used in pagerank convergence, do not change.
 #define DAMPING_FACTOR 0.85
 /// The number of seconds to not exceed forthe calculation loop.
