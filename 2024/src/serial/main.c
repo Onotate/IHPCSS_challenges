@@ -57,6 +57,14 @@ void calculate_pagerank(double pagerank[])
     double elapsed = omp_get_wtime() - start;
     double time_per_iteration = 0;
     double new_pagerank[GRAPH_ORDER];
+    int outdegrees[GRAPH_ORDER];
+
+    memset(outdegrees, 0, sizeof(outdegrees));
+
+    // Pre-calculate the outdegree of all nodes
+    for (int i = 0; i < GRAPH_ORDER; i++)
+        for (int k = 0; k < GRAPH_ORDER; k++)
+            if (adjacency_matrix[i][k] == 1) outdegrees[i]++;
 
     // If we exceeded the MAX_TIME seconds, we stop. If we typically spend X seconds on an iteration, and we are less than X seconds away from MAX_TIME, we stop.
     while(elapsed < MAX_TIME && (elapsed + time_per_iteration) < MAX_TIME)
@@ -65,16 +73,12 @@ void calculate_pagerank(double pagerank[])
  
         memset(new_pagerank, 0, sizeof(new_pagerank));
 
-    for (int i = 0; i < GRAPH_ORDER; i++) {
-      int outdegree = 0;
-
-      for (int k = 0; k < GRAPH_ORDER; k++)
-        if (adjacency_matrix[i][k] == 1) outdegree++;
-
-      for (int j = 0; j < GRAPH_ORDER; j++)
-        if (adjacency_matrix[i][j] == 1)
-          new_pagerank[j] += pagerank[i] / (double)outdegree;
-    }
+        // Go through each destination and update it's page rank
+        // using the incoming neighbour's page rank and outdegree.
+        for (int i = 0; i < GRAPH_ORDER; i++)
+            for (int j = 0; j < GRAPH_ORDER; j++)
+                if (adjacency_matrix[j][i] == 1)
+                    new_pagerank[i] += pagerank[j] / (double)outdegrees[j];     
  
         for(int i = 0; i < GRAPH_ORDER; i++)
         {
