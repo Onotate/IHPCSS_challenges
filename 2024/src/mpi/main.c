@@ -51,6 +51,7 @@ void calculate_pagerank(double pagerank[], int mpi_rank, int mpi_size)
  
     double damping_value = (1.0 - DAMPING_FACTOR) / GRAPH_ORDER;
     double diff = 1.0;
+    double global_diff;
     size_t iteration = 0;
 
     // MPI variables for gathering
@@ -110,26 +111,25 @@ void calculate_pagerank(double pagerank[], int mpi_rank, int mpi_size)
             new_pagerank[i] = DAMPING_FACTOR * new_pagerank[i] + damping_value;
         }
  
-        // TODO: Reduce diff and update global diff variables
+        // Local diff calculation
         diff = 0.0;
-        for(int i = 0; i < GRAPH_ORDER; i++)
+        for(int i = 0; i < block_size; i++)
         {
-            diff += fabs(new_pagerank[i] - pagerank[i]);
+            diff += fabs(new_pagerank[i] - pagerank[block_pos + i]);
         }
-        max_diff = (max_diff < diff) ? diff : max_diff;
-        total_diff += diff;
-        min_diff = (min_diff > diff) ? diff : min_diff;
- 
-
-
-
-
+        // Global diff calculation on only 1 proc
+        MPI_Reduce(&diff, &global_diff, 1, MPI_DOUBLE, MPI_SUM, mpi_size-1, MPI_COMM_WORLD);
+        if (mpi_rank == mpi_size - 1) {
+            max_diff = (max_diff < diff) ? diff : max_diff;
+            total_diff += diff;
+            min_diff = (min_diff > diff) ? diff : min_diff;
+        }
 
         // All procs gather page ranks from other procs
         MPI_Allgatherv(new_pagerank, block_size, MPI_DOUBLE,
                        pagerank, recvcounts, displs, MPI_DOUBLE,
                        MPI_COMM_WORLD);
-    
+
         // Per iteration validation
         // NOTE: May replace with reduction instead if MPI communication is faster
         if (mpi_rank == mpi_size - 1) {
@@ -144,7 +144,6 @@ void calculate_pagerank(double pagerank[], int mpi_rank, int mpi_size)
             }
         }
  
-        
         // double iteration_end = omp_get_wtime();
         if (mpi_rank == mpi_size - 1)
             elapsed = omp_get_wtime() - start;
