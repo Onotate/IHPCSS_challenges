@@ -50,9 +50,11 @@ void calculate_pagerank(double pagerank[], int mpi_rank, int mpi_size)
     }
  
     double damping_value = (1.0 - DAMPING_FACTOR) / GRAPH_ORDER;
-    double diff, global_diff;
-    double pg_total, global_pg_total;
     size_t iteration = 0;
+
+    // MPI reduction variables
+    double local_reduce[2];       // 0: local diff, 1: local total
+    double global_reduce[2];      // 0: global diff, 1: global total
 
     // MPI variables for gathering
     // Assume mpi_size > 1
@@ -112,26 +114,28 @@ void calculate_pagerank(double pagerank[], int mpi_rank, int mpi_size)
         }
  
         // Local diff and page rank total calculation
-        diff = 0.0;
-        pg_total = 0.0;
+        local_reduce[0] = 0.0;
+        local_reduce [1] = 0.0;
         for(int i = 0; i < block_size; i++)
         {
-            diff += fabs(new_pagerank[i] - pagerank[block_pos + i]);
-            pg_total += new_pagerank[i];
+            local_reduce[0] += fabs(new_pagerank[i] - pagerank[block_pos + i]);
+            local_reduce[1] += new_pagerank[i];
         }
-        // Global diff calculation on only 1 proc
-        MPI_Reduce(&diff, &global_diff, 1, MPI_DOUBLE, MPI_SUM, mpi_size-1, MPI_COMM_WORLD);
+        // Global diff and total reduction
+        MPI_Reduce(&local_reduce, &global_reduce, 2, MPI_DOUBLE, MPI_SUM, mpi_size-1, MPI_COMM_WORLD);
         if (mpi_rank == mpi_size - 1) {
+            double global_diff = global_reduce[0];
+            double global_total = global_reduce[1];
+
+            // Update the diff variables
             max_diff = (max_diff < global_diff) ? global_diff : max_diff;
             total_diff += global_diff;
             min_diff = (min_diff > global_diff) ? global_diff : min_diff;
-        }
-        // Global page rank total calculation for per iteration validation
-        MPI_Reduce(&pg_total, &global_pg_total, 1, MPI_DOUBLE, MPI_SUM, mpi_size-1, MPI_COMM_WORLD);
-        if (mpi_rank == mpi_size - 1) {
-            if(fabs(global_pg_total - 1.0) >= 1E-12)
+
+            // Per iteration validation
+            if(fabs(global_total - 1.0) >= 1E-12)
             {
-                printf("[ERROR] Iteration %zu: sum of all pageranks is not 1 but %.12f.\n", iteration, global_pg_total);
+                printf("[ERROR] Iteration %zu: sum of all pageranks is not 1 but %.12f.\n", iteration, global_total);
             }
         }
 
@@ -139,19 +143,6 @@ void calculate_pagerank(double pagerank[], int mpi_rank, int mpi_size)
         MPI_Allgatherv(new_pagerank, block_size, MPI_DOUBLE,
                        pagerank, recvcounts, displs, MPI_DOUBLE,
                        MPI_COMM_WORLD);
-
-        // Per iteration validation (single proc ver)
-        // if (mpi_rank == mpi_size - 1) {
-        //     double pagerank_total = 0.0;
-        //     for(int i = 0; i < GRAPH_ORDER; i++)
-        //     {
-        //         pagerank_total += pagerank[i];
-        //     }
-        //     if(fabs(pagerank_total - 1.0) >= 1E-12)
-        //     {
-        //         printf("[ERROR] Iteration %zu: sum of all pageranks is not 1 but %.12f.\n", iteration, pagerank_total);
-        //     }
-        // }
  
         // double iteration_end = omp_get_wtime();
         if (mpi_rank == mpi_size - 1)
