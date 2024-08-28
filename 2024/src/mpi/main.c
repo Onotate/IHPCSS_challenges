@@ -154,7 +154,8 @@ void calculate_pagerank(double pagerank[], int mpi_rank, int mpi_size)
         time_per_iteration = elapsed / iteration;
     }
     
-    printf("%zu iterations achieved in %.2f seconds\n", iteration, elapsed);
+    if (mpi_rank == mpi_size - 1)
+        printf("%zu iterations achieved in %.2f seconds\n", iteration, elapsed);
 }
 
 /**
@@ -162,7 +163,6 @@ void calculate_pagerank(double pagerank[], int mpi_rank, int mpi_size)
  **/
 void generate_nice_graph(void)
 {
-    printf("Generate a graph for testing purposes (i.e.: a nice and conveniently designed graph :) )\n");
     double start = omp_get_wtime();
     initialize_graph();
     for(int i = 0; i < GRAPH_ORDER; i++)
@@ -177,7 +177,7 @@ void generate_nice_graph(void)
             }
         }
     }
-    printf("%.2f seconds to generate the graph.\n", omp_get_wtime() - start);
+    printf("%.2f seconds to generate the nice graph.\n", omp_get_wtime() - start);
 }
 
 /**
@@ -185,7 +185,6 @@ void generate_nice_graph(void)
  **/
 void generate_sneaky_graph(void)
 {
-    printf("Generate a graph for the challenge (i.e.: a sneaky graph :P )\n");
     double start = omp_get_wtime();
     initialize_graph();
     for(int i = 0; i < GRAPH_ORDER; i++)
@@ -200,7 +199,7 @@ void generate_sneaky_graph(void)
             }
         }
     }
-    printf("%.2f seconds to generate the graph.\n", omp_get_wtime() - start);
+    printf("%.2f seconds to generate the sneaky graph.\n", omp_get_wtime() - start);
 }
 
 int main(int argc, char* argv[])
@@ -217,7 +216,8 @@ int main(int argc, char* argv[])
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     MPI_Comm_size(MPI_COMM_WORLD, &size);
 
-    printf("This program has two graph generators: generate_nice_graph and generate_sneaky_graph. If you intend to submit, your code will be timed on the sneaky graph, remember to try both.\n");
+    // This program has two graph generators: generate_nice_graph and generate_sneaky_graph. 
+    // If you intend to submit, your code will be timed on the sneaky graph, remember to try both.
 
     // Get the time at the very start.
     double start = omp_get_wtime();
@@ -246,6 +246,8 @@ int main(int argc, char* argv[])
      
         printf("Total time taken: %.4f seconds.\n", end - start);
     }
+
+    MPI_Finalize();
  
     return 0;
 }
