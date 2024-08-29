@@ -85,11 +85,10 @@ void calculate_pagerank(double pagerank[])
                 for (int j = 0; j < GRAPH_ORDER; j++)
                     if (adjacency_matrix[j][i] == 1)
                         new_pagerank[i] += pagerank[j] / (double)outdegrees[j];     
-            #pragma omp for
-            for(int i = 0; i < GRAPH_ORDER; i++)
-            {
-                new_pagerank[i] = DAMPING_FACTOR * new_pagerank[i] + damping_value;
-            }
+        }
+        for(int i = 0; i < GRAPH_ORDER; i++)
+        {
+            new_pagerank[i] = DAMPING_FACTOR * new_pagerank[i] + damping_value;
         }
         diff = 0.0;
         for(int i = 0; i < GRAPH_ORDER; i++)
