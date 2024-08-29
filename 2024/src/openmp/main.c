@@ -10,7 +10,7 @@
 #include <stdbool.h>
 #include <math.h>
 #include <omp.h>
-#include <mpi.h>
+// #include <mpi.h>
 #include <string.h>
 
 /// The number of vertices in the graph.
@@ -45,6 +45,7 @@ void calculate_pagerank(double pagerank[])
     double initial_rank = 1.0 / GRAPH_ORDER;
  
     // Initialise all vertices to 1/n.
+    // Not worth throwing openmp at this, it's a single loop.
     for(int i = 0; i < GRAPH_ORDER; i++)
     {
         pagerank[i] = initial_rank;
@@ -62,6 +63,7 @@ void calculate_pagerank(double pagerank[])
     memset(outdegrees, 0, sizeof(outdegrees));
 
     // Pre-calculate the outdegree of all nodes
+    #pragma omp parallel for
     for (int i = 0; i < GRAPH_ORDER; i++)
         for (int k = 0; k < GRAPH_ORDER; k++)
             if (adjacency_matrix[i][k] == 1) outdegrees[i]++;
@@ -74,17 +76,21 @@ void calculate_pagerank(double pagerank[])
         memset(new_pagerank, 0, sizeof(new_pagerank));
 
         // Go through each destination and update it's page rank
-        // using the incoming neighbour's page rank and outdegree.
-        for (int i = 0; i < GRAPH_ORDER; i++)
-            for (int j = 0; j < GRAPH_ORDER; j++)
-                if (adjacency_matrix[j][i] == 1)
-                    new_pagerank[i] += pagerank[j] / (double)outdegrees[j];     
- 
-        for(int i = 0; i < GRAPH_ORDER; i++)
+        // using the incoming neighbour's page rank and outdegree. 
+        // default(none) shared(adjacency_matrix, new_pagerank, pagerank, outdegrees)
+        #pragma omp parallel 
         {
-            new_pagerank[i] = DAMPING_FACTOR * new_pagerank[i] + damping_value;
+            #pragma omp for 
+            for (int i = 0; i < GRAPH_ORDER; i++)
+                for (int j = 0; j < GRAPH_ORDER; j++)
+                    if (adjacency_matrix[j][i] == 1)
+                        new_pagerank[i] += pagerank[j] / (double)outdegrees[j];     
+            #pragma omp for
+            for(int i = 0; i < GRAPH_ORDER; i++)
+            {
+                new_pagerank[i] = DAMPING_FACTOR * new_pagerank[i] + damping_value;
+            }
         }
- 
         diff = 0.0;
         for(int i = 0; i < GRAPH_ORDER; i++)
         {
@@ -95,7 +101,6 @@ void calculate_pagerank(double pagerank[])
         min_diff = (min_diff > diff) ? diff : min_diff;
  
         memcpy(pagerank, new_pagerank, sizeof(new_pagerank)); 
-            
         double pagerank_total = 0.0;
         for(int i = 0; i < GRAPH_ORDER; i++)
         {
@@ -173,7 +178,8 @@ int main(int argc, char* argv[])
     // Get the time at the very start.
     double start = omp_get_wtime();
     
-    generate_nice_graph();
+    // generate_nice_graph();
+    generate_sneaky_graph();
  
     /// The array in which each vertex pagerank is stored.
     double pagerank[GRAPH_ORDER];
