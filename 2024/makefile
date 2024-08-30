@@ -1,4 +1,5 @@
 CC=mpicc
+CXX=g++-14
 # Set default CFLAGS, allow them to be overridden or extended by the command line
 CFLAGS ?= -O2 -Wall -fopenmp -lm
 BIN_DIR=bin
@@ -20,13 +21,13 @@ serial: $(SERIAL_BIN)
 	$(CC) $(CFLAGS) -o $(SERIAL_BIN)/main_serial $(SRC_DIR)/serial/main.c
 
 openmp: $(OPENMP_BIN)
-	$(CC) $(CFLAGS) -fopenmp -o $(OPENMP_BIN)/main_openmp $(SRC_DIR)/openmp/main.c
+	$(CC) $(CFLAGS) -o $(OPENMP_BIN)/main_openmp $(SRC_DIR)/openmp/main.c
 
 mpi: $(MPI_BIN)
 	$(CC) $(CFLAGS) -o $(MPI_BIN)/main_mpi $(SRC_DIR)/mpi/main.c
 
 hybrid: $(HYBRID_BIN)
-	$(CC) $(CFLAGS) -fopenmp -o $(HYBRID_BIN)/main_hybrid $(SRC_DIR)/hybrid/main.c
+	$(CC) $(CFLAGS) -o $(HYBRID_BIN)/main_hybrid $(SRC_DIR)/hybrid/main.c
 
 # Ensure bin directories exist
 $(SERIAL_BIN) $(OPENMP_BIN) $(MPI_BIN) $(HYBRID_BIN):
