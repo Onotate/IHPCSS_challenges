@@ -21,7 +21,7 @@ serial: $(SERIAL_BIN)
 	$(CC) $(CFLAGS) -o $(SERIAL_BIN)/main_serial $(SRC_DIR)/serial/main.c
 
 openmp: $(OPENMP_BIN)
-	$(CXX) $(CFLAGS) -o $(OPENMP_BIN)/main_openmp $(SRC_DIR)/openmp/main.c
+	$(CC) $(CFLAGS) -o $(OPENMP_BIN)/main_openmp $(SRC_DIR)/openmp/main.c
 
 mpi: $(MPI_BIN)
 	$(CC) $(CFLAGS) -o $(MPI_BIN)/main_mpi $(SRC_DIR)/mpi/main.c
