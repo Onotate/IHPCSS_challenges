@@ -71,7 +71,6 @@ void calculate_pagerank(double pagerank[])
     // If we exceeded the MAX_TIME seconds, we stop. If we typically spend X seconds on an iteration, and we are less than X seconds away from MAX_TIME, we stop.
     while(elapsed < MAX_TIME && (elapsed + time_per_iteration) < MAX_TIME)
     {
-        // double iteration_start = omp_get_wtime();
         diff = 0.0;
         double pagerank_total = 0.0;
         memset(new_pagerank, 0, sizeof(new_pagerank));
@@ -100,17 +99,12 @@ void calculate_pagerank(double pagerank[])
  
         }
 
-        // #pragma omp for schedule(static) reduction(+:diff)
         max_diff = (max_diff < diff) ? diff : max_diff;
         total_diff += diff;
         min_diff = (min_diff > diff) ? diff : min_diff;
  
         memcpy(pagerank, new_pagerank, sizeof(new_pagerank)); 
         
-        // for(int i = 0; i < GRAPH_ORDER; i++)
-        // {
-        //     pagerank_total += pagerank[i];
-        // }
         if(fabs(pagerank_total - 1.0) >= 1E-12)
         {
             printf("[ERROR] Iteration %zu: sum of all pageranks is not 1 but %.12f.\n", iteration, pagerank_total);
