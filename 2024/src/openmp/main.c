@@ -43,7 +43,6 @@ void initialize_graph(void)
 void calculate_pagerank(double pagerank[])
 {
     double initial_rank = 1.0 / GRAPH_ORDER;
- 
     // Initialise all vertices to 1/n.
     // Not worth throwing openmp at this, it's a single loop.
     for(int i = 0; i < GRAPH_ORDER; i++)
@@ -58,12 +57,13 @@ void calculate_pagerank(double pagerank[])
     double elapsed = omp_get_wtime() - start;
     double time_per_iteration = 0;
     double new_pagerank[GRAPH_ORDER];
+    // double local_diff_array[GRAPH_ORDER];
     int outdegrees[GRAPH_ORDER];
 
     memset(outdegrees, 0, sizeof(outdegrees));
 
     // Pre-calculate the outdegree of all nodes
-    #pragma omp parallel for
+    #pragma omp parallel for schedule(static)
     for (int i = 0; i < GRAPH_ORDER; i++)
         for (int k = 0; k < GRAPH_ORDER; k++)
             if (adjacency_matrix[i][k] == 1) outdegrees[i]++;
@@ -72,39 +72,49 @@ void calculate_pagerank(double pagerank[])
     while(elapsed < MAX_TIME && (elapsed + time_per_iteration) < MAX_TIME)
     {
         // double iteration_start = omp_get_wtime();
- 
+        diff = 0.0;
+        double pagerank_total = 0.0;
+        double pagerank_total_local = 0.0;
+        double diff_local = 0.0;
         memset(new_pagerank, 0, sizeof(new_pagerank));
+        // memset(local_diff_array, 0, sizeof(local_diff_array));
 
         // Go through each destination and update it's page rank
         // using the incoming neighbour's page rank and outdegree. 
-        // default(none) shared(adjacency_matrix, new_pagerank, pagerank, outdegrees)
-        #pragma omp parallel 
+        #pragma omp parallel default(none) shared(adjacency_matrix, new_pagerank, pagerank, outdegrees, diff, pagerank_total) firstprivate(damping_value, diff_local, pagerank_total_local) 
         {
-            #pragma omp for 
+            #pragma omp for schedule(static)
             for (int i = 0; i < GRAPH_ORDER; i++)
                 for (int j = 0; j < GRAPH_ORDER; j++)
                     if (adjacency_matrix[j][i] == 1)
-                        new_pagerank[i] += pagerank[j] / (double)outdegrees[j];     
+                        new_pagerank[i] += pagerank[j] / (double)outdegrees[j];  
+
+            #pragma omp for nowait schedule(static)
+            for(int i = 0; i < GRAPH_ORDER; i++){
+                new_pagerank[i] = DAMPING_FACTOR * new_pagerank[i] + damping_value;
+                diff_local += fabs(new_pagerank[i] - pagerank[i]);
+                pagerank_total_local += pagerank[i];
+            }            
+
+            #pragma omp atomic
+            diff += diff_local;   
+
+            #pragma omp atomic
+            pagerank_total += pagerank_total_local;
+ 
         }
-        for(int i = 0; i < GRAPH_ORDER; i++)
-        {
-            new_pagerank[i] = DAMPING_FACTOR * new_pagerank[i] + damping_value;
-        }
-        diff = 0.0;
-        for(int i = 0; i < GRAPH_ORDER; i++)
-        {
-            diff += fabs(new_pagerank[i] - pagerank[i]);
-        }
+
+        // #pragma omp for schedule(static) reduction(+:diff)
         max_diff = (max_diff < diff) ? diff : max_diff;
         total_diff += diff;
         min_diff = (min_diff > diff) ? diff : min_diff;
  
         memcpy(pagerank, new_pagerank, sizeof(new_pagerank)); 
-        double pagerank_total = 0.0;
-        for(int i = 0; i < GRAPH_ORDER; i++)
-        {
-            pagerank_total += pagerank[i];
-        }
+        
+        // for(int i = 0; i < GRAPH_ORDER; i++)
+        // {
+        //     pagerank_total += pagerank[i];
+        // }
         if(fabs(pagerank_total - 1.0) >= 1E-12)
         {
             printf("[ERROR] Iteration %zu: sum of all pageranks is not 1 but %.12f.\n", iteration, pagerank_total);
