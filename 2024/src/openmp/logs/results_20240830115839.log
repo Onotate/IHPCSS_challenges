@@ -1,0 +1,97 @@
+---*-----*------*------*--------*-----*--------
+Extract reduction into its own loop, #2 #3 have nowait + nicegraph bench
+Run #1
+This program has two graph generators: generate_nice_graph and generate_sneaky_graph. If you intend to submit, your code will be timed on the sneaky graph, remember to try both.
+Generate a graph for testing purposes (i.e.: a nice and conveniently designed graph :) )
+0.00 seconds to generate the graph.
+9452 iterations achieved in 10.00 seconds
+PageRank of vertex 0: 0.001000
+PageRank of vertex 100: 0.001000
+PageRank of vertex 200: 0.001000
+PageRank of vertex 300: 0.001000
+PageRank of vertex 400: 0.001000
+PageRank of vertex 500: 0.001000
+PageRank of vertex 600: 0.001000
+PageRank of vertex 700: 0.001000
+PageRank of vertex 800: 0.001000
+PageRank of vertex 900: 0.001000
+Sum of all pageranks = 1.000000000000, total diff = 0.000000000000, max diff = 0.000000000000 and min diff = 0.000000000000.
+Total time taken: 9.9998 seconds.
+Completed run #1
+---------------------------------
+Run #2
+This program has two graph generators: generate_nice_graph and generate_sneaky_graph. If you intend to submit, your code will be timed on the sneaky graph, remember to try both.
+Generate a graph for testing purposes (i.e.: a nice and conveniently designed graph :) )
+0.00 seconds to generate the graph.
+9371 iterations achieved in 10.00 seconds
+PageRank of vertex 0: 0.001000
+PageRank of vertex 100: 0.001000
+PageRank of vertex 200: 0.001000
+PageRank of vertex 300: 0.001000
+PageRank of vertex 400: 0.001000
+PageRank of vertex 500: 0.001000
+PageRank of vertex 600: 0.001000
+PageRank of vertex 700: 0.001000
+PageRank of vertex 800: 0.001000
+PageRank of vertex 900: 0.001000
+Sum of all pageranks = 1.000000000000, total diff = 0.000000000000, max diff = 0.000000000000 and min diff = 0.000000000000.
+Total time taken: 9.9999 seconds.
+Completed run #2
+---------------------------------
+Run #3
+This program has two graph generators: generate_nice_graph and generate_sneaky_graph. If you intend to submit, your code will be timed on the sneaky graph, remember to try both.
+Generate a graph for testing purposes (i.e.: a nice and conveniently designed graph :) )
+0.00 seconds to generate the graph.
+9312 iterations achieved in 10.00 seconds
+PageRank of vertex 0: 0.001000
+PageRank of vertex 100: 0.001000
+PageRank of vertex 200: 0.001000
+PageRank of vertex 300: 0.001000
+PageRank of vertex 400: 0.001000
+PageRank of vertex 500: 0.001000
+PageRank of vertex 600: 0.001000
+PageRank of vertex 700: 0.001000
+PageRank of vertex 800: 0.001000
+PageRank of vertex 900: 0.001000
+Sum of all pageranks = 1.000000000000, total diff = 0.000000000000, max diff = 0.000000000000 and min diff = 0.000000000000.
+Total time taken: 10.0000 seconds.
+Completed run #3
+---------------------------------
+Run #4
+This program has two graph generators: generate_nice_graph and generate_sneaky_graph. If you intend to submit, your code will be timed on the sneaky graph, remember to try both.
+Generate a graph for testing purposes (i.e.: a nice and conveniently designed graph :) )
+0.00 seconds to generate the graph.
+9451 iterations achieved in 10.00 seconds
+PageRank of vertex 0: 0.001000
+PageRank of vertex 100: 0.001000
+PageRank of vertex 200: 0.001000
+PageRank of vertex 300: 0.001000
+PageRank of vertex 400: 0.001000
+PageRank of vertex 500: 0.001000
+PageRank of vertex 600: 0.001000
+PageRank of vertex 700: 0.001000
+PageRank of vertex 800: 0.001000
+PageRank of vertex 900: 0.001000
+Sum of all pageranks = 1.000000000000, total diff = 0.000000000000, max diff = 0.000000000000 and min diff = 0.000000000000.
+Total time taken: 10.0001 seconds.
+Completed run #4
+---------------------------------
+Run #5
+This program has two graph generators: generate_nice_graph and generate_sneaky_graph. If you intend to submit, your code will be timed on the sneaky graph, remember to try both.
+Generate a graph for testing purposes (i.e.: a nice and conveniently designed graph :) )
+0.00 seconds to generate the graph.
+9131 iterations achieved in 10.00 seconds
+PageRank of vertex 0: 0.001000
+PageRank of vertex 100: 0.001000
+PageRank of vertex 200: 0.001000
+PageRank of vertex 300: 0.001000
+PageRank of vertex 400: 0.001000
+PageRank of vertex 500: 0.001000
+PageRank of vertex 600: 0.001000
+PageRank of vertex 700: 0.001000
+PageRank of vertex 800: 0.001000
+PageRank of vertex 900: 0.001000
+Sum of all pageranks = 1.000000000000, total diff = 0.000000000000, max diff = 0.000000000000 and min diff = 0.000000000000.
+Total time taken: 9.9999 seconds.
+Completed run #5
+---------------------------------

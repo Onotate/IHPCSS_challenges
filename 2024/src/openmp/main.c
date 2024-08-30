@@ -74,14 +74,11 @@ void calculate_pagerank(double pagerank[])
         // double iteration_start = omp_get_wtime();
         diff = 0.0;
         double pagerank_total = 0.0;
-        double pagerank_total_local = 0.0;
-        double diff_local = 0.0;
         memset(new_pagerank, 0, sizeof(new_pagerank));
-        // memset(local_diff_array, 0, sizeof(local_diff_array));
 
         // Go through each destination and update it's page rank
         // using the incoming neighbour's page rank and outdegree. 
-        #pragma omp parallel default(none) shared(adjacency_matrix, new_pagerank, pagerank, outdegrees, diff, pagerank_total) firstprivate(damping_value, diff_local, pagerank_total_local) 
+        #pragma omp parallel default(none) shared(adjacency_matrix, new_pagerank, pagerank, outdegrees, diff, pagerank_total) firstprivate(damping_value) 
         {
             #pragma omp for schedule(static)
             for (int i = 0; i < GRAPH_ORDER; i++)
@@ -89,18 +86,17 @@ void calculate_pagerank(double pagerank[])
                     if (adjacency_matrix[j][i] == 1)
                         new_pagerank[i] += pagerank[j] / (double)outdegrees[j];  
 
-            #pragma omp for nowait schedule(static)
+            #pragma omp for nowait schedule(static) 
             for(int i = 0; i < GRAPH_ORDER; i++){
                 new_pagerank[i] = DAMPING_FACTOR * new_pagerank[i] + damping_value;
-                diff_local += fabs(new_pagerank[i] - pagerank[i]);
-                pagerank_total_local += pagerank[i];
             }            
 
-            #pragma omp atomic
-            diff += diff_local;   
-
-            #pragma omp atomic
-            pagerank_total += pagerank_total_local;
+            #pragma omp for nowait schedule(static) reduction(+:diff, pagerank_total)
+            for(int i = 0; i < GRAPH_ORDER; i++)
+            {
+                diff += fabs(new_pagerank[i] - pagerank[i]);
+                pagerank_total += new_pagerank[i];
+            }
  
         }
 
@@ -187,8 +183,8 @@ int main(int argc, char* argv[])
     // Get the time at the very start.
     double start = omp_get_wtime();
     
-    // generate_nice_graph();
-    generate_sneaky_graph();
+    generate_nice_graph();
+    //generate_sneaky_graph();
  
     /// The array in which each vertex pagerank is stored.
     double pagerank[GRAPH_ORDER];
