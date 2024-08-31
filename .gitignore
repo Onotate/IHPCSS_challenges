@@ -1,0 +1,5 @@
+# Classic gitignore file for C projects with a few additions for VS Code
+.vscode/
+.DS_Store
+/bin/
+/logs/
