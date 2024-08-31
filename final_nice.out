@@ -1,0 +1,29 @@
+
+The following have been reloaded with a version change:
+  1) TeachEnv/2018a => TeachEnv/2022a
+
+[teach07.scinet.local:20748] MCW rank 0 is not bound (or bound to all available processors)
+[teach07.scinet.local:20749] MCW rank 1 is not bound (or bound to all available processors)
+[teach08.scinet.local:06398] MCW rank 2 is not bound (or bound to all available processors)
+[teach08.scinet.local:06399] MCW rank 3 is not bound (or bound to all available processors)
+[teach09.scinet.local:01311] MCW rank 4 is not bound (or bound to all available processors)
+[teach09.scinet.local:01312] MCW rank 5 is not bound (or bound to all available processors)
+0.00 seconds to generate the nice graph.
+0.00 seconds to generate the nice graph.
+0.00 seconds to generate the nice graph.
+0.00 seconds to generate the nice graph.
+0.00 seconds to generate the nice graph.
+0.00 seconds to generate the nice graph.
+20685 iterations achieved in 10.00 seconds
+PageRank of vertex 0: 0.001000
+PageRank of vertex 100: 0.001000
+PageRank of vertex 200: 0.001000
+PageRank of vertex 300: 0.001000
+PageRank of vertex 400: 0.001000
+PageRank of vertex 500: 0.001000
+PageRank of vertex 600: 0.001000
+PageRank of vertex 700: 0.001000
+PageRank of vertex 800: 0.001000
+PageRank of vertex 900: 0.001000
+Sum of all pageranks = 1.000000000000, total diff = 0.000000000000, max diff = 0.000000000000 and min diff = 0.000000000000.
+Total time taken: 10.0026 seconds.

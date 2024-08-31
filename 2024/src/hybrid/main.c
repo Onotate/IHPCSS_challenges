@@ -51,11 +51,7 @@ void calculate_pagerank(double pagerank[], int mpi_rank, int mpi_size)
  
     double damping_value = (1.0 - DAMPING_FACTOR) / GRAPH_ORDER;
     size_t iteration = 0;
-
-    // MPI reduction variables
-    double local_reduce[2];       // 0: local diff, 1: local total
-    double global_reduce[2];      // 0: global diff, 1: global total
-
+ 
     // MPI variables for gathering
     // Assume mpi_size > 1
     int recvcounts[mpi_size];
@@ -80,7 +76,7 @@ void calculate_pagerank(double pagerank[], int mpi_rank, int mpi_size)
     // Pre-calculate the outdegree of all nodes
     int outdegrees[GRAPH_ORDER];
     memset(outdegrees, 0, sizeof(outdegrees));
-    #pragma omp parallel for schedule(static)
+    #pragma omp parallel for default(none) shared(adjacency_matrix, outdegrees) schedule(static)
     for (int i = 0; i < GRAPH_ORDER; i++)
         for (int k = 0; k < GRAPH_ORDER; k++)
             if (adjacency_matrix[i][k] == 1) outdegrees[i]++;
@@ -88,12 +84,12 @@ void calculate_pagerank(double pagerank[], int mpi_rank, int mpi_size)
     // Time tracking
     double start, elapsed;
     double time_per_iteration = 0;
-    if (mpi_rank == mpi_size - 1) {
+    if (mpi_rank == 0) {
         start = omp_get_wtime();
         elapsed = omp_get_wtime() - start;
     }
     // broadcast elapsed for synchronization
-    MPI_Bcast(&elapsed, 1, MPI_DOUBLE, mpi_size-1, MPI_COMM_WORLD);
+    MPI_Bcast(&elapsed, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 
     // If we exceeded the MAX_TIME seconds, we stop. If we typically spend X seconds on an iteration, and we are less than X seconds away from MAX_TIME, we stop.
     while(elapsed < MAX_TIME && (elapsed + time_per_iteration) < MAX_TIME)
@@ -101,9 +97,8 @@ void calculate_pagerank(double pagerank[], int mpi_rank, int mpi_size)
         // double iteration_start = omp_get_wtime();
  
         memset(new_pagerank, 0, sizeof(new_pagerank));
-        double local_diff = 0.0, local_total = 0.0;
 
-        #pragma omp parallel default(none) shared(adjacency_matrix, new_pagerank, pagerank, outdegrees, local_reduce, damping_value, block_size, block_pos, local_diff, local_total)
+        #pragma omp parallel default(none) shared(adjacency_matrix, new_pagerank, pagerank, outdegrees, damping_value, block_size, block_pos)
         {
             // Go through each destination and update it's page rank
             // using the incoming neighbour's page rank and outdegree.
@@ -119,26 +114,22 @@ void calculate_pagerank(double pagerank[], int mpi_rank, int mpi_size)
             {
                 new_pagerank[i] = DAMPING_FACTOR * new_pagerank[i] + damping_value;
             }
-     
-            // Local diff and page rank total calculation
-            #pragma omp for nowait schedule(static) reduction(+:local_diff, local_total)
-            for(int i = 0; i < block_size; i++)
-            {
-                local_diff += fabs(new_pagerank[i] - pagerank[block_pos + i]);
-                local_total += new_pagerank[i];
-            }
         }
 
-        local_reduce[0] = local_diff;
-        local_reduce[1] = local_total;
+        // All procs gather page ranks from other procs
+        MPI_Allgatherv(new_pagerank, block_size, MPI_DOUBLE,
+                       new_gather, recvcounts, displs, MPI_DOUBLE,
+                       MPI_COMM_WORLD);
 
-        // Global diff and total reduction
-        MPI_Reduce(&local_reduce, &global_reduce, 2, MPI_DOUBLE, MPI_SUM, mpi_size-1, MPI_COMM_WORLD);
         if (mpi_rank == mpi_size - 1) {
-            double global_diff = global_reduce[0];
-            double global_total = global_reduce[1];
+            double global_diff = 0.0;
+            double global_total = 0.0;
 
-            // Update the diff variables
+            #pragma omp parallel for default(none) shared(new_gather, pagerank, iteration) reduction(+:global_diff, global_total)
+            for (int i = 0; i < GRAPH_ORDER; i++) {
+                global_diff += fabs(new_gather[i] - pagerank[i]);
+                global_total += new_gather[i];
+            } 
             max_diff = (max_diff < global_diff) ? global_diff : max_diff;
             total_diff += global_diff;
             min_diff = (min_diff > global_diff) ? global_diff : min_diff;
@@ -150,40 +141,20 @@ void calculate_pagerank(double pagerank[], int mpi_rank, int mpi_size)
             }
         }
 
-        // All procs gather page ranks from other procs
-        MPI_Allgatherv(new_pagerank, block_size, MPI_DOUBLE,
-                       new_gather, recvcounts, displs, MPI_DOUBLE,
-                       MPI_COMM_WORLD);
-
-        // if (mpi_rank == mpi_size - 1) {
-        //     double global_diff = 0.0;
-        //     double global_total = 0.0;
-        //
-        //     #pragma omp parallel for default(none) shared(new_gather, pagerank) reduction(+:global_diff, global_total)
-        //     for (int i = 0; i < GRAPH_ORDER; i++) {
-        //         global_diff += fabs(new_gather[i] - pagerank[i]);
-        //         global_total += new_gather[i];
-        //     }
-        //     max_diff = (max_diff < global_diff) ? global_diff : max_diff;
-        //     total_diff += global_diff;
-        //     min_diff = (min_diff > global_diff) ? global_diff : min_diff;
-        //
-        //     if (fabs(global_total - 1.0) >= 1E-12) {
-        //         printf("[ERROR] Iteration %zu: sum of all pageranks is not 1 but %.12f.\n", iteration, global_total);
-        //     }
-        // }
+        // copy to pagerank
+        memcpy(pagerank, new_gather, sizeof(new_gather));
  
         // double iteration_end = omp_get_wtime();
-        if (mpi_rank == mpi_size - 1)
+        if (mpi_rank == 0)
             elapsed = omp_get_wtime() - start;
         // broadcast elapsed, hopefully also acts as a barrier
-        MPI_Bcast(&elapsed, 1, MPI_DOUBLE, mpi_size-1, MPI_COMM_WORLD);
+        MPI_Bcast(&elapsed, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 
         iteration++;
         time_per_iteration = elapsed / iteration;
     }
     
-    if (mpi_rank == mpi_size - 1)
+    if (mpi_rank == 0)
         printf("%zu iterations achieved in %.2f seconds\n", iteration, elapsed);
 }
 
