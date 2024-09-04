@@ -139,7 +139,7 @@ if [ "$2" == "mpi" ]; then
 	if [ "$3" == "small" ]; then
 		runner="mpirun -n 4 -mca btl ^openib";
 	else
-		runner="mpirun -n 112 -mca btl ^openib"; # Does not work on Teach cluster unless we change submission script
+		runner="mpirun -n 64 -mca btl ^openib";
 	fi
 elif [ "$2" == "openmp" ]; then
 	if [ "$3" == "small" ]; then

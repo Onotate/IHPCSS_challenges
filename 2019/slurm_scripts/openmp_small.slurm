@@ -1,10 +1,11 @@
 #!/bin/bash
 
 #SBATCH --nodes=1
-#SBATCH --partition=RM
+#SBATCH --job-name=2019_omp_small
 #SBATCH --ntasks-per-node 4
-#SBATCH --time=00:00:30
-#SBATCH --res challenge
-#SBATCH -A ac560tp
+#SBATCH --time=00:01:00
+
+source teachsetup
+
 set -x
 ./run.sh ${1} openmp small ${2}
