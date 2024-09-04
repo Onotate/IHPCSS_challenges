@@ -77,8 +77,8 @@ function is_in_array
 clear;
 echo "Quick help:";
 echo -e "\t- This script is meant to be run as follows: './run.sh LANGUAGE IMPLEMENTATION SIZE [OUTPUT_FILE]'";
-echo -e "\t- LANGUAGE = 'C' | 'FORTRAN'";
-echo -e "\t- IMPLEMENTATION = 'serial' | 'openmp' | 'mpi' | 'hybrid_cpu' | 'openacc' | 'hybrid_gpu'";
+echo -e "\t- LANGUAGE = 'C'";
+echo -e "\t- IMPLEMENTATION = 'serial' | 'openmp' | 'mpi' | 'hybrid_cpu'";
 echo -e "\t- SIZE = 'small' | 'big'";
 echo -e "\t- OUTPUT_FILE = the path to the file in which store the output. If no output file is given, the output is printed in the console."
 echo -e "\t- Example: to run the C serial version on the small grid, run './run.sh C serial small'.\n";
@@ -95,7 +95,7 @@ fi
 #############################################
 # Check that the language passed is correct #
 #############################################
-languages=("C" "FORTRAN");
+languages=("C");
 all_languages=`echo ${languages[@]}`;
 is_in_array languages $1
 language_retrieved=$?;
@@ -108,7 +108,7 @@ fi
 ###################################################
 # Check that the implementation passed is correct #
 ###################################################
-implementations=("serial" "openmp" "mpi" "hybrid_cpu" "openacc" "hybrid_gpu");
+implementations=("serial" "openmp" "mpi" "hybrid_cpu");
 all_implementations=`echo ${implementations[@]}`;
 is_in_array implementations $2
 implementation_retrieved=$?;
@@ -139,31 +139,19 @@ if [ "$2" == "mpi" ]; then
 	if [ "$3" == "small" ]; then
 		runner="mpirun -n 4 -mca btl ^openib";
 	else
-		runner="mpirun -n 112 -mca btl ^openib";
+		runner="mpirun -n 64 -mca btl ^openib";
 	fi
 elif [ "$2" == "openmp" ]; then
 	if [ "$3" == "small" ]; then
 		runner="OMP_NUM_THREADS=4";
 	else
-		runner="OMP_NUM_THREADS=28";
+		runner="OMP_NUM_THREADS=16";
 	fi
 elif [ "$2" == "hybrid_cpu" ]; then
 	if [ "$3" == "small" ]; then
 		runner="mpirun -n 2 -x OMP_NUM_THREADS=2 -mca btl ^openib";
 	else
-		runner="mpirun -n 8 -x OMP_NUM_THREADS=14 -mca btl ^openib";
-	fi
-elif [ "$2" == "openacc" ]; then
-	if [ "$3" == "small" ]; then
-		runner="";
-	else
-		runner="";
-	fi
-elif [ "$2" == "hybrid_gpu" ]; then
-	if [ "$3" == "small" ]; then
-		runner="mpirun -n 2 -mca btl ^openib";
-	else
-		runner="mpirun -n 8 -mca btl ^openib";
+		runner="mpirun -n 8 -x OMP_NUM_THREADS=8 -mca btl ^openib";
 	fi
 fi
 executable="./bin/$1/$2_$3";

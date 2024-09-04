@@ -14,7 +14,7 @@
 #define PRINT_FREQUENCY 100
 
 /// Time taken during the entire simulation, in seconds
-double timer_simulation;
+// double timer_simulation;
 
 /**
  * @brief Initialises the temperatures.

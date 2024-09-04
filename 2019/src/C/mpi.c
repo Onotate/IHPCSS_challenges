@@ -37,6 +37,8 @@ int main(int argc, char *argv[])
     // Status returned by MPI calls
     MPI_Status status;
 
+    double timer_simulation;
+
     // The usual MPI startup routines
     MPI_Init(&argc, &argv);
     MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
@@ -47,7 +49,7 @@ int main(int argc, char *argv[])
         printf("The small version is meant to be run with 4 MPI processes, not %d.\n", comm_size);
         MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
     }
-    else if(strcmp(VERSION_RUN, "mpi_big") == 0 && comm_size != 112)
+    else if(strcmp(VERSION_RUN, "mpi_big") == 0 && comm_size != 64)
     {
         printf("The big version is meant to be run with 112 MPI processes, not %d.\n", comm_size);
         MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);

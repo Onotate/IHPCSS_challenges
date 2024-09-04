@@ -41,29 +41,17 @@ function is_in_array
     return $in
 }
 
-###########################################
-# Check that the right modules are loaded #
-###########################################
-if ! type "pgcc" > /dev/null 2>&1; then \
-	clear; \
-	echo -e "\n    . "; \
-	echo -e "   / \\"; \
-	echo -e "  / ! \\  It looks like the PGI compiler is not loaded."; \
-	echo -e " /_____\\ On Bridges please issue 'module load cuda/9.2 mpi/pgi_openmpi/19.4-nongpu'. You can now make again :)\n"; \
-	exit -1; \
-fi
-
 ######################
 # Display quick help #
 ######################
 clear;
 echo "Quick help:";
 echo "  - This script is meant to be submit as follows: './submit.sh LANGUAGE IMPLEMENTATION SIZE OUTPUT_FILE'";
-echo "  - LANGUAGE = 'C' | 'FORTRAN'";
-echo "  - IMPLEMENTATION = 'serial' | 'openmp' | 'mpi' | 'hybrid_cpu' | 'openacc' | 'hybrid_gpu'";
+echo "  - LANGUAGE = 'C'";
+echo "  - IMPLEMENTATION = 'serial' | 'openmp' | 'mpi' | 'hybrid_cpu'";
 echo "  - SIZE = 'small' | 'big'";
 echo "  - OUTPUT_FILE = the path to the file in which store the output.";
-echo "  - Example: to submit the C serial version on the small grid, submit './submit.sh C serial small'.";
+echo "  - Example: to submit the C serial version on the small grid, submit './submit.sh C serial small out.txt'.";
 echo "";
 
 #################################
@@ -78,7 +66,7 @@ fi
 #############################################
 # Check that the language passed is correct #
 #############################################
-languages=("C" "FORTRAN");
+languages=("C");
 all_languages=`echo ${languages[@]}`;
 is_in_array languages $1
 language_retrieved=$?;
@@ -91,7 +79,7 @@ fi
 ###################################################
 # Check that the implementation passed is correct #
 ###################################################
-implementations=("serial" "openmp" "mpi" "hybrid_cpu" "openacc" "hybrid_gpu");
+implementations=("serial" "openmp" "mpi" "hybrid_cpu");
 all_implementations=`echo ${implementations[@]}`;
 is_in_array implementations $2
 implementation_retrieved=$?;

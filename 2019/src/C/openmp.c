@@ -32,6 +32,8 @@ int main(int argc, char *argv[])
     // Largest change in temperature. 
     double dt = 100;
 
+    double timer_simulation;
+
     // Initialise temperatures and temperature_last including boundary conditions
     initialise_temperatures(temperature, temperature_last);  
 
