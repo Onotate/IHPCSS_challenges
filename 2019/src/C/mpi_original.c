@@ -37,8 +37,6 @@ int main(int argc, char *argv[])
     // Status returned by MPI calls
     MPI_Status status;
 
-    int from, to;
-
     double timer_simulation;
 
     // The usual MPI startup routines
@@ -93,19 +91,33 @@ int main(int argc, char *argv[])
         // HALO SWAP PHASE //
         ////////////////////
 
-        // Send down, receive up phase 
-        to = my_rank == comm_size-1 ? MPI_PROC_NULL : my_rank + 1;
-        from = my_rank == 0 ? MPI_PROC_NULL : my_rank - 1;
-        MPI_Sendrecv(&temperature[ROWS][1], COLUMNS, MPI_DOUBLE, to, 0,
-                     &temperature_last[0][1], COLUMNS, MPI_DOUBLE, from, MPI_ANY_TAG,
-                     MPI_COMM_WORLD, &status);
+        // If we are not the last MPI process, we have a bottom neighbour
+        if(my_rank != comm_size-1)
+        {
+			// We send our bottom row to our bottom neighbour
+            MPI_Send(&temperature[ROWS][1], COLUMNS, MPI_DOUBLE, my_rank+1, 0, MPI_COMM_WORLD);
+        }
 
-        // Send up, receive down phase
-        to = my_rank == 0 ? MPI_PROC_NULL : my_rank - 1;
-        from = my_rank == comm_size-1 ? MPI_PROC_NULL : my_rank + 1;
-        MPI_Sendrecv(&temperature[1][1], COLUMNS, MPI_DOUBLE, to, 0,
-                     &temperature_last[ROWS+1][1], COLUMNS, MPI_DOUBLE, from, MPI_ANY_TAG,
-                     MPI_COMM_WORLD, &status);
+        // If we are not the first MPI process, we have a top neighbour
+        if(my_rank != 0)
+        {
+            // We receive the bottom row from that neighbour into our top halo
+            MPI_Recv(&temperature_last[0][1], COLUMNS, MPI_DOUBLE, my_rank-1, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
+        }
+
+        // If we are not the first MPI process, we have a top neighbour
+        if(my_rank != 0)
+        {
+            // Send out top row to our top neighbour
+            MPI_Send(&temperature[1][1], COLUMNS, MPI_DOUBLE, my_rank-1, 0, MPI_COMM_WORLD);
+        }
+
+        // If we are not the last MPI process, we have a bottom neighbour
+        if(my_rank != comm_size-1)
+        {   
+            // We receive the top row from that neighbour into our bottom halo
+            MPI_Recv(&temperature_last[ROWS+1][1], COLUMNS, MPI_DOUBLE, my_rank+1, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
+        }
 
         //////////////////////////////////////
         // FIND MAXIMAL TEMPERATURE CHANGE //
