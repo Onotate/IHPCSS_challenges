@@ -2,7 +2,7 @@
 
 #SBATCH --nodes=1
 #SBATCH --job-name=2019_opm_big
-#SBATCH --ntasks-per-node 16
+#SBATCH --cpus-per-task=16
 #SBATCH --time=00:20:00
 
 source teachsetup
