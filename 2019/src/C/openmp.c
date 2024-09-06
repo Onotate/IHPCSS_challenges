@@ -43,12 +43,12 @@ int main(int argc, char *argv[])
     ///////////////////////////////////
     start_timer(&timer_simulation);
 
-    #pragma omp parallel
+   #pragma omp parallel
     {
-      #pragma omp master
-      {
-        printf("Application run using %d OpenMP threads.\n", omp_get_num_threads());
-      } // End of OpenMP master region
+		#pragma omp master
+		{
+		  printf("Application run using %d OpenMP threads.\n", omp_get_num_threads());
+		} // End of OpenMP master region
     } // End of OpenMP parallel region
 
 	// Do until error is under threshold or until max iterations is reached
