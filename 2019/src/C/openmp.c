@@ -10,6 +10,7 @@
 #include <math.h> // fabs
 #include <stdio.h> // printf
 #include <stdlib.h> // EXIT_SUCCESS
+#include <string.h>
 #include <omp.h>
 
 /**
@@ -44,10 +45,10 @@ int main(int argc, char *argv[])
 
     #pragma omp parallel
     {
-        #pragma omp master
-        {
-			printf("Application run using %d OpenMP threads.\n", omp_get_num_threads());
-        } // End of OpenMP master region
+      #pragma omp master
+      {
+        printf("Application run using %d OpenMP threads.\n", omp_get_num_threads());
+      } // End of OpenMP master region
     } // End of OpenMP parallel region
 
 	// Do until error is under threshold or until max iterations is reached
@@ -59,25 +60,25 @@ int main(int argc, char *argv[])
 		dt = 0.0; 
 
 		// Main calculation: average my four neighbors
-		#pragma omp parallel for
+		#pragma omp parallel for default(none) shared(temperature, temperature_last)
 		for(unsigned int i = 1; i <= ROWS; i++)
 		{
 			for(unsigned int j = 1; j <= COLUMNS; j++)
 			{
-				temperature[i][j] = 0.25 * (temperature_last[i+1][j  ] +
-											temperature_last[i-1][j  ] +
+				temperature[i][j] = 0.25 * (temperature_last[i-1][j  ] +	
 											temperature_last[i  ][j+1] +
-											temperature_last[i  ][j-1]);
+											temperature_last[i  ][j-1] +
+                      temperature_last[i+1][j  ]);
 			}
 		}
 
 		// Copy grid to old grid for next iteration and find latest dt
-		#pragma omp parallel for reduction(max:dt)
+		#pragma omp parallel for default(none) shared(temperature, temperature_last) reduction(max:dt)
 		for(unsigned int i = 1; i <= ROWS; i++)
 		{
 			for(unsigned int j = 1; j <= COLUMNS; j++)
 			{
-				dt = fmax(fabs(temperature[i][j]-temperature_last[i][j]), dt);
+        dt = fmax(fabs(temperature[i][j]-temperature_last[i][j]), dt);
 				temperature_last[i][j] = temperature[i][j];
 			}
 		}
