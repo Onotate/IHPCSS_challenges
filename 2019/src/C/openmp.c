@@ -60,7 +60,7 @@ int main(int argc, char *argv[])
 		dt = 0.0; 
 
 		// Main calculation: average my four neighbors
-		#pragma omp parallel for default(none) shared(temperature, temperature_last)
+		#pragma omp parallel for default(none) shared(temperature, temperature_last) schedule(static)
 		for(unsigned int i = 1; i <= ROWS; i++)
 		{
 			for(unsigned int j = 1; j <= COLUMNS; j++)
@@ -73,7 +73,7 @@ int main(int argc, char *argv[])
 		}
 
 		// Copy grid to old grid for next iteration and find latest dt
-		#pragma omp parallel for default(none) shared(temperature, temperature_last) reduction(max:dt)
+		#pragma omp parallel for default(none) shared(temperature, temperature_last) schedule(static) reduction(max:dt)
 		for(unsigned int i = 1; i <= ROWS; i++)
 		{
 			for(unsigned int j = 1; j <= COLUMNS; j++)
