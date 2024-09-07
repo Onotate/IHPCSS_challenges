@@ -77,10 +77,6 @@ int main(int argc, char *argv[])
     if(my_rank == 0)
     {
         start_timer(&timer_simulation);
-        #pragma omp parallel
-        {
-            printf("Application run using %d OpenMP threads.\n", omp_get_num_threads());
-        } // End of OpenMP parallel region
     }
 
     while(dt_global > MAX_TEMP_ERROR && iteration <= MAX_NUMBER_OF_ITERATIONS)
@@ -88,17 +84,17 @@ int main(int argc, char *argv[])
         iteration++;
 
         // Main calculation: average my four neighbours
-	    #pragma omp parallel for default(none) shared(temperature, temperature_last)
-		for(unsigned int i = 1; i <= ROWS; i++)
-		{
-			for(unsigned int j = 1; j <= COLUMNS; j++)
-			{
-				temperature[i][j] = 0.25 * (temperature_last[i-1][j  ] +	
-											temperature_last[i  ][j+1] +
-											temperature_last[i  ][j-1] +
-                      temperature_last[i+1][j  ]);
-			}
-		}
+		#pragma omp parallel for default(none) shared(temperature, temperature_last) 
+        for(unsigned int i = 1; i <= ROWS; i++)
+        {
+            for(unsigned int j = 1; j <= COLUMNS; j++)
+            {
+                temperature[i][j] = 0.25 * (temperature_last[i+1][j  ] +
+                                            temperature_last[i-1][j  ] +
+                                            temperature_last[i  ][j+1] +
+                                            temperature_last[i  ][j-1]);
+            }
+        }
 
         //////////////////////
         // HALO SWAP PHASE //
